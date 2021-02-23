@@ -2,17 +2,21 @@ package card
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 	"strconv"
 )
 
 type Transaction struct {
-	UserId int64
-	Sum    int64
-	MCC    string
+	UserId int64 `json:"user_id"`
+	Sum    int64 `json:"sum"`
+	MCC    string `json:"mcc"`
 }
+
 
 func MakeTransactions(userId int64) []Transaction {
 	const usersCount = 5
@@ -114,4 +118,46 @@ func ImportCsv(filename string) ([]Transaction, error) {
 	}
 	recordConv := MapRowToTransaction(records)
 	return recordConv, nil
+}
+
+func ExportJson(filename string, transactions []Transaction) error {
+	encoded, err := json.Marshal(transactions)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	err = ioutil.WriteFile(filename, encoded, 0644)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
+}
+
+func ImportJSON(filename string) ([]Transaction, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer func(c io.Closer) {
+		if cerr := c.Close(); cerr != nil {
+			log.Println(cerr)
+		}
+	}(file)
+
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var decoded []Transaction
+	err = json.Unmarshal(content, &decoded)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	log.Println(reflect.TypeOf(decoded), decoded)
+	return decoded, nil
 }

@@ -6,11 +6,19 @@ import (
 )
 
 func main()  {
-	filename := "test.csv"
-	trans, err := card.ImportCsv(filename)
+	fileCSV := "test.csv"
+	fileJSON := "test.json"
+	impCSV, err := card.ImportCsv(fileCSV)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println("Imported", len(trans), "rows from", filename)
+	log.Println("Imported", len(impCSV), "rows from", fileCSV)
+
+	impJSON, err := card.ImportJSON(fileJSON)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println("Imported", len(impJSON), "rows from", fileJSON)
 }

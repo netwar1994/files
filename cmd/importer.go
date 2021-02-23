@@ -8,6 +8,7 @@ import (
 func main()  {
 	fileCSV := "test.csv"
 	fileJSON := "test.json"
+	fileXML := "test.xml"
 	impCSV, err := card.ImportCsv(fileCSV)
 	if err != nil {
 		log.Println(err)
@@ -21,4 +22,11 @@ func main()  {
 		return
 	}
 	log.Println("Imported", len(impJSON), "rows from", fileJSON)
+
+	impXML, err := card.ImportXML(fileXML)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println("Imported", len(impXML), "rows from", fileXML)
 }

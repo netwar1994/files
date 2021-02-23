@@ -3,20 +3,25 @@ package card
 import (
 	"encoding/csv"
 	"encoding/json"
+	"encoding/xml"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 )
 
 type Transaction struct {
-	UserId int64 `json:"user_id"`
-	Sum    int64 `json:"sum"`
-	MCC    string `json:"mcc"`
+	XMLName xml.Name `xml:"transaction"`
+	UserId int64 `json:"user_id" xml:"user_id"`
+	Sum    int64 `json:"sum" xml:"sum"`
+	MCC    string `json:"mcc" xml:"mcc"`
 }
 
+type Transactions struct {
+	XMLName xml.Name `xml:"transactions"`
+	Transactions []Transaction `xml:"transaction"`
+}
 
 func MakeTransactions(userId int64) []Transaction {
 	const usersCount = 5
@@ -146,18 +151,67 @@ func ImportJSON(filename string) ([]Transaction, error) {
 		}
 	}(file)
 
-	content, err := ioutil.ReadFile(filename)
+	reader, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
 	var decoded []Transaction
-	err = json.Unmarshal(content, &decoded)
+	err = json.Unmarshal(reader, &decoded)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	log.Println(reflect.TypeOf(decoded), decoded)
 	return decoded, nil
+}
+
+func ExportXML(filename string, transactions []Transaction) error {
+	encoded, err := xml.Marshal(Transactions{
+		Transactions: transactions,
+	})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	encoded = append([]byte(xml.Header), encoded...)
+
+	err = ioutil.WriteFile(filename, encoded, 0644)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func ImportXML(filename string) ([]Transaction, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer func(c io.Closer) {
+		if cerr := c.Close(); cerr != nil {
+			log.Println(cerr)
+		}
+	}(file)
+
+	reader, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var decoded Transactions
+	//decoded := Transactions{
+	//	XMLName:      xml.Header,
+	//	Transactions: []Transaction{},
+	//}
+	err = xml.Unmarshal(reader, &decoded)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return decoded.Transactions, nil
 }

@@ -7,11 +7,22 @@ import (
 
 func main()  {
 	transactions := card.MakeTransactions(1)
-	filename := "test.csv"
-	trans, err := card.ExportCSV(filename, transactions)
+	fileCSV := "test.csv"
+	fileJSON := "test.json"
+
+	expCSV, err := card.ExportCSV(fileCSV, transactions)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println("Exported", len(trans), "rows to", filename)
+	log.Println("Exported", len(expCSV), "rows to", fileCSV)
+
+	err = card.ExportJson(fileJSON, transactions)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println("Exported to", fileJSON)
+
+
 }

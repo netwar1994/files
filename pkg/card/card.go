@@ -97,7 +97,12 @@ func ExportCSV(filename string, transactions []Transaction) ([]Transaction, erro
 	}
 
 	writer := csv.NewWriter(file)
-	writer.WriteAll(records)
+	err = writer.WriteAll(records)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
 	recordConv := MapRowToTransaction(records)
 	return recordConv, nil
 }
